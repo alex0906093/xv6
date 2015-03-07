@@ -8,6 +8,7 @@
 #include "traps.h"
 #include "spinlock.h"
 
+#define HANDLED 1
 // Interrupt descriptor table (shared by all CPUs).
 struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
@@ -36,7 +37,8 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
-  if(tf->trapno == T_SYSCALL){
+  	//not sure what to do here
+    if(tf->trapno == T_SYSCALL){
     if(proc->killed)
       exit();
     proc->tf = tf;
@@ -45,8 +47,21 @@ trap(struct trapframe *tf)
       exit();
     return;
   }
-
+  uint oldeip = 0;
   switch(tf->trapno){
+  //divide by 0 error
+  case T_DIVIDE:
+	  //need macro for handled
+  if(proc->handlers[8] != -1){
+	oldeip = tf->eip;
+	uint esp = tf->esp;
+	esp - 4 = 0;
+	esp - 8 = oldeip;
+	esp = esp - 8;
+	tf->eip = &proc->handlers[8];
+	break;	  
+  }
+  //if not go to default case
   case T_IRQ0 + IRQ_TIMER:
     if(cpu->id == 0){
       acquire(&tickslock);

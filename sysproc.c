@@ -6,7 +6,8 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-
+#include "user.h"
+//#include "fcntl.h"
 int
 sys_fork(void)
 {
@@ -40,6 +41,27 @@ int
 sys_getpid(void)
 {
   return proc->pid;
+}
+//test call
+int 
+sys_testcall(void){
+  cprintf("Test Successful\n");
+  return 1;
+}
+//need to set up signal to run new function, not sure how
+int
+sys_signal(void){
+ 	int snum;
+	sighandler_t newsig;
+	int sigfunc;
+	if(argint(0, &snum) < 0)
+		return -1;
+	snum = argint(0, &snum);
+	if(argint(1, &sigfunc) < 0)
+		return -1;
+	int sigfunnum = argint(1, &sigfun);
+	newsig = *(*void)sigfunnum(snum);
+	proc->handlers[snum] = newsig;
 }
 
 int

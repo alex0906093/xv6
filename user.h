@@ -24,7 +24,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int halt(void);
-
+int testcall(void);
+int signal(uint signum, void *(func));
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

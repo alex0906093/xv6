@@ -21,3 +21,5 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_halt   22
+#define SYS_testcall 23
+#define SYS_signal 24
