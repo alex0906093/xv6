@@ -52,13 +52,15 @@ trap(struct trapframe *tf)
   //divide by 0 error
   case T_DIVIDE:
 	  //need macro for handled
-  if(proc->handlers[8] != -1){
+  if(proc->handlers[8]){
 	oldeip = tf->eip;
 	uint esp = tf->esp;
-	esp - 4 = 0;
-	esp - 8 = oldeip;
+	uint param1 = esp - 4;
+	uint oldcall = esp - 8;
+	param1 = 0;
+	oldcall = oldeip;
 	esp = esp - 8;
-	tf->eip = &proc->handlers[8];
+	tf->eip = (uint)proc->handlers[8];
 	break;	  
   }
   //if not go to default case

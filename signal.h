@@ -22,7 +22,7 @@ struct sighandler_t{
 	void *function;
 }; typedef struct sighandler_t sighandler_t;
 */
-typedef *(*void) sig_func_pointer(int signumber) sighandler_t;
+typedef void (*sighandler_t)(int);// sighandler_t;
 // At a minimum you must define the signal constants themselves
 // as well as a sighandler_t type.
 

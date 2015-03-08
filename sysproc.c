@@ -6,7 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-#include "user.h"
+//#include "user.h"
 //#include "fcntl.h"
 int
 sys_fork(void)
@@ -52,16 +52,18 @@ sys_testcall(void){
 int
 sys_signal(void){
  	int snum;
-	sighandler_t newsig;
+	sighandler_t *newsig;
 	int sigfunc;
 	if(argint(0, &snum) < 0)
 		return -1;
 	snum = argint(0, &snum);
 	if(argint(1, &sigfunc) < 0)
 		return -1;
-	int sigfunnum = argint(1, &sigfun);
-	newsig = *(*void)sigfunnum(snum);
+	int sigfunnum = argint(1, &sigfunc);
+	
+	newsig = (sighandler_t*) sigfunnum;
 	proc->handlers[snum] = newsig;
+	return 1;
 }
 
 int
