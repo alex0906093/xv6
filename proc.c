@@ -37,11 +37,6 @@ allocproc(void)
   struct proc *p;
   char *sp;
   
- /* int j;
-  
-  for(j = 0; j < 28; j++){
-	&p->handled[j] = (sighandler_t)-1;
-  }*/
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
@@ -75,6 +70,11 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  int j;
+  for(j = 0; j < 28; j++){
+	p->handlers[j] = (sighandler_t)-1;
+  }
+  
   return p;
 }
 

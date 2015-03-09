@@ -67,8 +67,6 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];  // Process name (debugging)
   sighandler_t handlers[28];
-  int handled[28];
-  // = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};	//signal handler array for signals to be passed to Process
 };
 
 // Process memory is laid out contiguously, low addresses first:

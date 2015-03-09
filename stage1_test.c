@@ -3,6 +3,11 @@
 #include "user.h"
 #include "signal.h"
 
+void dummy(void)
+{
+	printf(1, "We do nothing...\n");
+}
+
 void handle_signal(int signum)
 {
 	printf(1, "Caught signal %d...\n", signum);

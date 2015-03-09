@@ -7,6 +7,7 @@
 #include "x86.h"
 #include "traps.h"
 #include "spinlock.h"
+#include "signal.h"
 
 #define HANDLED 1
 // Interrupt descriptor table (shared by all CPUs).
@@ -47,27 +48,20 @@ trap(struct trapframe *tf)
       exit();
     return;
   }
-  uint oldeip = 0;
+  
   switch(tf->trapno){
   //divide by 0 error
   case T_DIVIDE:
-	  //need macro for handled
-  if(proc->handlers[8]){
-	cprintf("got to proc\n");
-	oldeip = tf->eip;
-	uint esp = tf->esp;
-	uint param1 = esp - 4;
-	uint oldcall = esp - 8;
-	param1 = 0;
-	oldcall = oldeip;
-	//weird but need this to compile on local machine
-	if(oldcall == param1){
-	panic("trap");
-	}
-	esp = esp - 8;
-	tf->eip = (uint)proc->handlers[8];
-	break;	  
-  }
+	  if(proc->handlers[SIGFPE] != (sighandler_t) -1){
+		//cprintf("We have a hander for SIGPFE @ %d\n", proc->handlers[SIGFPE]);
+
+		*((uint*)(tf->esp-4)) = SIGFPE;
+		*((uint*)(tf->esp-8)) = tf->eip;
+		tf->eip = (uint) proc->handlers[SIGFPE];
+		tf->esp -= 8;
+		break;	  
+	  }
+  
   //if not go to default case
   case T_IRQ0 + IRQ_TIMER:
     if(cpu->id == 0){
