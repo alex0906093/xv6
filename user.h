@@ -1,3 +1,4 @@
+#include "signal.h"
 struct stat;
 struct rtcdate;
 
@@ -25,7 +26,7 @@ int sleep(int);
 int uptime(void);
 int halt(void);
 int testcall(void);
-int signal(uint signum, void *(func));
+int signal(uint signum, sighandler_t handler);
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

@@ -51,18 +51,18 @@ sys_testcall(void){
 //need to set up signal to run new function, not sure how
 int
 sys_signal(void){
- 	int snum;
-	sighandler_t *newsig;
-	int sigfunc;
+	int snum;
+	sighandler_t newsig;
+	cprintf("signal is called\n");
+	int sigfunc = 1;
 	if(argint(0, &snum) < 0)
 		return -1;
-	snum = argint(0, &snum);
 	if(argint(1, &sigfunc) < 0)
 		return -1;
-	int sigfunnum = argint(1, &sigfunc);
-	
-	newsig = (sighandler_t*) sigfunnum;
+	cprintf("snum is %d and sigfunnum is %d\n", snum, sigfunc);
+	newsig = (sighandler_t) sigfunc;
 	proc->handlers[snum] = newsig;
+	cprintf("returning from signal\n");
 	return 1;
 }
 

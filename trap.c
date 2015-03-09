@@ -53,12 +53,17 @@ trap(struct trapframe *tf)
   case T_DIVIDE:
 	  //need macro for handled
   if(proc->handlers[8]){
+	cprintf("got to proc\n");
 	oldeip = tf->eip;
 	uint esp = tf->esp;
 	uint param1 = esp - 4;
 	uint oldcall = esp - 8;
 	param1 = 0;
 	oldcall = oldeip;
+	//weird but need this to compile on local machine
+	if(oldcall == param1){
+	panic("trap");
+	}
 	esp = esp - 8;
 	tf->eip = (uint)proc->handlers[8];
 	break;	  

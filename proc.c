@@ -36,10 +36,11 @@ allocproc(void)
 {
   struct proc *p;
   char *sp;
-  //int j;
-  /*
+  
+ /* int j;
+  
   for(j = 0; j < 28; j++){
-	p->handlers[j] = 0;
+	&p->handled[j] = (sighandler_t)-1;
   }*/
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)

@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 {
 	int x = 5;
 	int y = 0;
-
+	//printf("pointer address %p \n", (void*)handle_signal);
 	signal(SIGFPE, handle_signal);
 
 	x = x / y;
