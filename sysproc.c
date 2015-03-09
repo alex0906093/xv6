@@ -53,16 +53,16 @@ int
 sys_signal(void){
 	int snum;
 	sighandler_t newsig;
-	cprintf("signal is called\n");
+	//cprintf("signal is called\n");
 	int sigfunc = 1;
 	if(argint(0, &snum) < 0)
 		return -1;
 	if(argint(1, &sigfunc) < 0)
 		return -1;
-	cprintf("snum is %d and sigfunnum is %d\n", snum, sigfunc);
+	//cprintf("snum is %d and sigfunnum is %d\n", snum, sigfunc);
 	newsig = (sighandler_t) sigfunc;
 	proc->handlers[snum] = newsig;
-	cprintf("returning from signal\n");
+	//cprintf("returning from signal\n");
 	return 1;
 }
 
