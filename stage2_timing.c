@@ -5,18 +5,23 @@
 
 void handle_signal(int signum)
 {
+	int refAddress;
 	static int count = 0;
-
+	
 	if (count == 100000) {
 		printf(1, "count == %d\n", count);
-		exit();
+		//int modRetAdd;
+		*((int*)(&refAddress+20)) -= 0x04; 
+		
+			
+		return;
 	}
 	count++;
 
-	__asm__ ("movl %ebp, %esp\n\t"		// pretend we are exiting the function already
+	__asm__ (	 "movl %ebp, %esp\n\t"		// pretend we are exiting the function already
 			 "popl %ebp\n\t"		//
 	 		 "popl %ecx\n\t"		// pop return address into ecx
-     		 "popl %edx\n\t"		// pop arg into edx (throw away)
+ 	    		 "popl %edx\n\t"		// pop arg into edx (throw away)
  			 "pushl %ecx\n\t"		// push return address back
 	 		 "pushl %ebp\n\t"		// restore things so that leave can undo it again
 	 		 "movl %esp, %ebp\n\t");
