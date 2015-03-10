@@ -24,18 +24,18 @@ void handle_signal(int signum)
 	 		 "pushl %ebp\n\t"		// restore things so that leave can undo it again
 	 		 "movl %esp, %ebp\n\t");
 }
-
+int ut1;
+int ut2;
 int main(int argc, char *argv[])
 {
 	int x = 5;
 	int y = 0;
-	int ut1;
 	
 	signal(SIGFPE, handle_signal);
 	ut1 = uptime();
 	
 	x = x / y;
-	int ut2 = uptime();
+	ut2 = uptime();
 	//printf(1, "ut1 is %d, ut2 is %d\n", ut1, ut2);
 	int uttotal = ut2 - ut1;
 	//printf(1, "total time is %d\n", uttotal);
