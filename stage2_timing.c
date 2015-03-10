@@ -11,7 +11,7 @@ void handle_signal(int signum)
 	
 	if (count == LIMIT) {
 		//printf(1, "count == %d\n", count);
-		*((int*)(&refAddress+20)) -= 0x04; 
+		*((&refAddress+16)) -= 0x08; 
 		return;
 	}
 	count++;
@@ -24,30 +24,33 @@ void handle_signal(int signum)
 	 		 "pushl %ebp\n\t"		// restore things so that leave can undo it again
 	 		 "movl %esp, %ebp\n\t");
 }
-
+//need to be global so stack doesnt mess with them
+int ut1;
+int ut2;
 int main(int argc, char *argv[])
 {
+	
 	int x = 5;
 	int y = 0;
-	int ut1;
 	
 	signal(SIGFPE, handle_signal);
 	ut1 = uptime();
 	
 	x = x / y;
-	int ut2 = uptime();
+	ut2 = uptime();
 	//printf(1, "ut1 is %d, ut2 is %d\n", ut1, ut2);
 	int uttotal = ut2 - ut1;
 	//printf(1, "total time is %d\n", uttotal);
 	float uttotalf = (float)uttotal;
 	float flim = (float)LIMIT;
 	float avg = uttotalf / flim;
-	avg = avg * 10000;
+	avg = avg * 100000;
 	int newavg = (int)avg;
 	//printf(1, "avg is %d\n", newavg);
 	printf(1, "Traps Performed: %d\n", LIMIT);
 	printf(1, "Total Elapsed Time: %d\n", uttotal);
 	printf(1, "Average Time Per Trap: %d\n", newavg);
-	
+	ut1 = 0;
+	ut2 = 0;
 	exit();
 }
