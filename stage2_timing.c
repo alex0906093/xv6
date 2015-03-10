@@ -3,17 +3,15 @@
 #include "user.h"
 #include "signal.h"
 
+#define LIMIT 1000000
 void handle_signal(int signum)
 {
 	int refAddress;
 	static int count = 0;
 	
-	if (count == 100000) {
-		printf(1, "count == %d\n", count);
-		//int modRetAdd;
+	if (count == LIMIT) {
+		//printf(1, "count == %d\n", count);
 		*((int*)(&refAddress+20)) -= 0x04; 
-		
-			
 		return;
 	}
 	count++;
@@ -31,14 +29,25 @@ int main(int argc, char *argv[])
 {
 	int x = 5;
 	int y = 0;
-
+	int ut1;
+	
 	signal(SIGFPE, handle_signal);
+	ut1 = uptime();
 	
 	x = x / y;
-
-	printf(1, "Traps Performed: XXXX\n");
-	printf(1, "Total Elapsed Time: XXXX\n");
-	printf(1, "Average Time Per Trap: XXXXX\n");
+	int ut2 = uptime();
+	//printf(1, "ut1 is %d, ut2 is %d\n", ut1, ut2);
+	int uttotal = ut2 - ut1;
+	//printf(1, "total time is %d\n", uttotal);
+	float uttotalf = (float)uttotal;
+	float flim = (float)LIMIT;
+	float avg = uttotalf / flim;
+	avg = avg * 10000;
+	int newavg = (int)avg;
+	//printf(1, "avg is %d\n", newavg);
+	printf(1, "Traps Performed: %d\n", LIMIT);
+	printf(1, "Total Elapsed Time: %d\n", uttotal);
+	printf(1, "Average Time Per Trap: %d\n", newavg);
 	
 	exit();
 }
