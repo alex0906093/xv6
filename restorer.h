@@ -2,7 +2,13 @@
 
 
 /*dealing with volatile registers, gonna put notes from class here to hopefully make this easier*/
-
+/*NOTES:
+ *
+ *
+ *
+ *
+ *
+ */
 void restorer(void);
 
 __asm__("restorer:\n\t"
