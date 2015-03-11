@@ -11,6 +11,11 @@
  *
  */
 void restorer(void);
+/*
+void restorer(void){
+	printf(1,"getting here\n");
+}
+*/
 
 __asm__("restorer:\n\t"
 			"pop %ebp\n\t"
@@ -19,3 +24,4 @@ __asm__("restorer:\n\t"
 			"pop %ecx\n\t"
 			"pop %eax\n\t"
 			"ret\n\t");
+			

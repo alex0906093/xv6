@@ -66,11 +66,11 @@ trap(struct trapframe *tf)
 	   *
 	   * */
 	  if(proc->handlers[SIGFPE] != (sighandler_t) -1 && proc->restorer != (sighandler_t) -1){	
-		*((uint*)(tf->esp-4)) = *((uint*)(proc->restorer));
+		*((uint*)(tf->esp-4)) = (uint) proc->restorer;
 		*((uint*)(tf->esp-8)) = SIGFPE;
-		*((uint*)(tf->esp-12)) = tf->edx;
-		*((uint*)(tf->esp-16)) = tf->ecx;
-		*((uint*)(tf->esp-20)) = tf->eax;
+		*((uint*)(tf->esp-12)) = *((uint*)(tf->edx));
+		*((uint*)(tf->esp-16)) = *((uint*)(tf->ecx));
+		*((uint*)(tf->esp-20)) = *((uint*)(tf->eax));
 		*((uint*)(tf->esp-24)) = tf->eip;
 		tf->eip = (uint) proc->handlers[SIGFPE];
 		tf->esp -= 24;
