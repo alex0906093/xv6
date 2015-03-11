@@ -72,9 +72,9 @@ found:
 
   int j;
   for(j = 0; j < 28; j++){
-	p->handlers[j] = (sighandler_t)-2;
+	p->handlers[j] = (sighandler_t)-1;
   }
-  
+  p->restorer = (sighandler_t)-1; 
   return p;
 }
 
