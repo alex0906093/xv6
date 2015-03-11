@@ -67,6 +67,7 @@ trap(struct trapframe *tf)
 	   * */
 	  if(proc->handlers[SIGFPE] != (sighandler_t) -1 && proc->restorer != (sighandler_t) -1){	
 		*((uint*)(tf->esp-4)) = (uint) proc->restorer;
+		cprintf("address of restorer %d\n", (int) proc->restorer);
 		*((uint*)(tf->esp-8)) = SIGFPE;
 		*((uint*)(tf->esp-12)) = *((uint*)(tf->edx));
 		*((uint*)(tf->esp-16)) = *((uint*)(tf->ecx));

@@ -62,7 +62,8 @@ sys_signal(void){
 		return -1;
 	//cprintf("snum is %d and sigfunnum is %d\n", snum, sigfunc);
 	newsig = (sighandler_t) sigfunc;
-	if(argint(0, &snum) == -1){
+	if(snum == -1){
+		cprintf("snum is %d\n", snum);
 		proc->restorer = newsig;
 		return 1;
 	}

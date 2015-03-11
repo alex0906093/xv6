@@ -16,9 +16,12 @@ void restorer(void){
 	printf(1,"getting here\n");
 }
 */
-
+int dummyfunc(void){
+	printf(1, "hi \n");
+	return 1;
+}
 __asm__("restorer:\n\t"
-			"pop %ebp\n\t"
+			//"pop %ebp\n\t"
 			"pop %edx\n\t"
 			"pop %edx\n\t"
 			"pop %ecx\n\t"
