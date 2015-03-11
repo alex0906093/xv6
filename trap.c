@@ -61,7 +61,16 @@ trap(struct trapframe *tf)
 		tf->esp -= 8;
 		break;	  
 	  }
-  
+	  if(proc->handlers[SIGRESTORER] != (sighandler_t) -1){
+		*((uint*)(tf->esp-4)) = SIGFPE;
+		*((uint*)(tf->esp-8)) = tf->eip;
+		tf->eip = (uint) proc->handlers[SIGRESTORER];
+		tf->esp -= 8;
+		*((uint*)(tf->esp-4)) = *((uint*)(tf->edx));
+		*((uint*)(tf->esp-8)) = *((uint*)(tf->ecx));
+		*((uint*)(tf->esp-12)) = *((uint*)(tf->eax));	
+		
+	  }
   //if not go to default case
   case T_IRQ0 + IRQ_TIMER:
     if(cpu->id == 0){

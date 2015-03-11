@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "signal.h"
 //#include "user.h"
 //#include "fcntl.h"
 int
@@ -55,12 +56,15 @@ sys_signal(void){
 	sighandler_t newsig;
 	//cprintf("signal is called\n");
 	int sigfunc = 1;
-	if(argint(0, &snum) < 0)
+	if(argint(0, &snum) < 0 && argint(0, &snum) != -1)
 		return -1;
 	if(argint(1, &sigfunc) < 0)
 		return -1;
 	//cprintf("snum is %d and sigfunnum is %d\n", snum, sigfunc);
 	newsig = (sighandler_t) sigfunc;
+	if(snum == -1){
+		snum = SIGRESTORER;
+	}
 	proc->handlers[snum] = newsig;
 	//cprintf("returning from signal\n");
 	return 1;

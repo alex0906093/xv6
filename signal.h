@@ -12,7 +12,7 @@
 #define SIGPIPE 13
 #define SIGALRM 14
 #define SIGTERM 15
-
+#define SIGRESTORER 16
 // You should define anything signal related that needs to be shared between
 // kernel and userspace here
 /*

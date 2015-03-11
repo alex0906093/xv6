@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	float uttotalf = (float)uttotal;
 	float flim = (float)LIMIT;
 	float avg = uttotalf / flim;
-	avg = avg * 10000;
+	avg = avg * 100000;
 	int newavg = (int)avg;
 	//printf(1, "avg is %d\n", newavg);
 	printf(1, "Traps Performed: %d\n", LIMIT);
