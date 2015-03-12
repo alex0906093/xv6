@@ -23,8 +23,7 @@ int dummyfunc(void){
 }*/
 
 __asm__("restorer:\n\t"
-			"pop %ebp\n\t"
-			"pop %edx\n\t"
+		        "pop %edx\n\t"
 			"pop %edx\n\t"
 			"pop %ecx\n\t"
 			"pop %eax\n\t"

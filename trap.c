@@ -66,15 +66,14 @@ trap(struct trapframe *tf)
 	   *
 	   * */
 	  if(proc->handlers[SIGFPE] != (sighandler_t) -1 && proc->restorer != (sighandler_t) -1){	
+		
+		  
 		*((uint*)(tf->esp-24)) = (uint) proc->restorer;
-		//cprintf("address of restorer %d\n", (int) proc->restorer);
 		*((uint*)(tf->esp-20)) = SIGFPE;
 		*((uint*)(tf->esp-16)) = tf->edx;
 		*((uint*)(tf->esp-12)) = tf->ecx;
 		*((uint*)(tf->esp-8)) = tf->eax;
-		//cprintf("%d is ecx\n", (int)tf->ecx);
-		*((uint*)(tf->esp-4)) = tf->eip;//real return address located at esp + 4
-		//*((uint*)(&tf->esp-24)) -= 0x04;
+		*((uint*)(tf->esp-4)) = tf->eip;//real return address located at
 		tf->eip = (uint) proc->handlers[SIGFPE];
 		tf->esp -= 24;
 		break;	
