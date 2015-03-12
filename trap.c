@@ -73,7 +73,7 @@ trap(struct trapframe *tf)
 		*((uint*)(tf->esp-12)) = tf->ecx;
 		*((uint*)(tf->esp-8)) = tf->eax;
 		//cprintf("%d is ecx\n", (int)tf->ecx);
-		*((uint*)(tf->esp-4)) = tf->eip;
+		*((uint*)(tf->esp-4)) = tf->eip;//real return address located at esp + 4
 		//*((uint*)(&tf->esp-24)) -= 0x04;
 		tf->eip = (uint) proc->handlers[SIGFPE];
 		tf->esp -= 24;
