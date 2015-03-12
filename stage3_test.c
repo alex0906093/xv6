@@ -7,10 +7,9 @@
 
 void handle_signal(int signum)
 {
-	*((int*)(&signum+4)) +=0x04;
 	__asm__ ("movl $0x0,%ecx\n\t");
 	 //Add your code to skip the return ip here
-	
+	        *((int*)(&signum+4)) +=0x04;
     	return;
 } 
 
