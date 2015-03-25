@@ -89,7 +89,19 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
-
+//Semaphore system calls
+int sys_sem_init(void){
+	return 1;
+}
+int sys_sem_destroy(void){
+	return 1;
+}
+int sys_sem_wait(void){
+	return 1;
+}
+int sys_sem_signal(void){
+	return 1;
+}
 // Halt (shutdown) the system by sending a special
 // signal to QEMU.
 // Based on: http://pdos.csail.mit.edu/6.828/2012/homework/xv6-syscall.html
