@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "c_semaphore.h"
 
 int
 sys_fork(void)
@@ -91,9 +92,16 @@ sys_uptime(void)
 }
 //Semaphore system calls
 int sys_sem_init(void){
-	return 1;
+    int sem,value;argint(0, &sem);argint(1, &value);
+    if (ptable.semaphores[sem]->state==SEM_ACTIVE||value<0) {return -1;}
+    ptable.semaphores[sem]->state=SEM_ACTIVE;
+    ptable.semaphores[sem]->value=value;
+    if (ptable.semaphores[sem]->lock) {initlock(&ptable.semaphores[sem]->lock,"semaphore");}
+    return 1;
 }
-int sys_sem_destroy(void){
+int sys_sem_destroy(void) {
+    int sem;argint(0, &sem);
+    
 	return 1;
 }
 int sys_sem_wait(void){

@@ -6,11 +6,13 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-#include "semaphore.h"
+#include "string.h"
+#include "c_semaphore.h"
 
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
+  struct semaphore semaphores[SEM_LIMIT];
 } ptable;
 
 static struct proc *initproc;
@@ -25,8 +27,8 @@ void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
+  init_sems();
 }
-
 //PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
@@ -463,4 +465,13 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+void init_sems(void) {
+    int i=0;
+    for (;i<SEM_LIMIT;i++) {
+        struct spinlock lock;
+        char *lab="Sem-";lab[3]=i;
+        initlock(&lock,lab);
+        ptable.semaphores[i]={i,SE_DEAD,lock};
+    }
 }
