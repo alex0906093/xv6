@@ -53,6 +53,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->semaphores = ptable.semaphores;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -75,7 +76,6 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
-  p->semaphores = ptable.semaphores;
   return p;
 }
 
@@ -471,10 +471,12 @@ procdump(void)
 }
 void init_sems(void) {
     int i=0;
+    acquire(&ptable.lock);
     for (;i<SEM_LIMIT;i++) {
         struct spinlock lock;
         char *lab="Sem-";lab[3]=i;
         initlock(&lock,lab);
         ptable.semaphores[i]=(struct semaphore){i,SEM_DEAD,&lock};
     }
+    release(&ptable.lock);
 }
