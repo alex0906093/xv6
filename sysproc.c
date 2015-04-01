@@ -109,9 +109,14 @@ int sys_sem_wait(void){
 	int sem;argint(0,&sem);int count;argint(1,&count);
 	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value--;
 	if(proc->semaphores[sem].value<0){sleep(&proc->semaphores[sem].value,proc->semaphores[sem].lock);}
+	release(proc->semaphores[sem].lock);
 	return 1;
 }
 int sys_sem_signal(void){
+	int sem;argint(0,&sem);int count; argint(1, &count);
+	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value++;
+	wakeup(&proc->semaphores[sem]);
+	release(proc->semaphores[sem].lock);
 	return 1;
 }
 // Halt (shutdown) the system by sending a special
