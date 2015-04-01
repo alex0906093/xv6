@@ -93,10 +93,10 @@ sys_uptime(void)
 //Semaphore system calls
 int sys_sem_init(void){
     int sem,value;argint(0, &sem);argint(1, &value);
-    if (ptable.semaphores[sem]->state==SEM_ACTIVE||value<0) {return -1;}
-    ptable.semaphores[sem]->state=SEM_ACTIVE;
-    ptable.semaphores[sem]->value=value;
-    if (ptable.semaphores[sem]->lock) {initlock(&ptable.semaphores[sem]->lock,"semaphore");}
+    if (proc->semaphores[sem].state==SEM_ACTIVE||value<0) {return -1;}
+    proc->semaphores[sem].state=SEM_ACTIVE;
+    proc->semaphores[sem].value=value;
+    if (proc->semaphores[sem].lock) {initlock(proc->semaphores[sem].lock,"semaphore");}
     return 1;
 }
 int sys_sem_destroy(void) {

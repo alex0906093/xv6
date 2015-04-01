@@ -6,8 +6,11 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-#include "string.h"
+//#include "string.h"
 #include "c_semaphore.h"
+
+
+
 
 struct {
   struct spinlock lock;
@@ -72,7 +75,7 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
-
+  p->semaphores = ptable.semaphores;
   return p;
 }
 
@@ -472,6 +475,6 @@ void init_sems(void) {
         struct spinlock lock;
         char *lab="Sem-";lab[3]=i;
         initlock(&lock,lab);
-        ptable.semaphores[i]={i,SE_DEAD,lock};
+        ptable.semaphores[i]=(struct semaphore){i,SEM_DEAD,&lock};
     }
 }
