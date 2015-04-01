@@ -5,7 +5,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "x86.h"
-
+#include "c_semaphore.h"
 static void startothers(void);
 static void mpmain(void)  __attribute__((noreturn));
 extern pde_t *kpgdir;
@@ -40,6 +40,7 @@ main(void)
   userinit();      // first user process
   // Finish setting up this processor in mpmain.
   mpmain();
+  init_sems();
 }
 
 // Other CPUs jump here from entryother.S.

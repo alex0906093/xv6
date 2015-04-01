@@ -6,7 +6,6 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-//#include "string.h"
 #include "c_semaphore.h"
 
 
@@ -15,9 +14,10 @@
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
-  struct semaphore semaphores[SEM_LIMIT];
 } ptable;
 
+//semaphore table	
+struct semaphore semaphores[SEM_LIMIT];
 static struct proc *initproc;
 
 int nextpid = 1;
@@ -30,7 +30,6 @@ void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
-  init_sems();
 }
 //PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
@@ -53,7 +52,6 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->semaphores = ptable.semaphores;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -76,6 +74,7 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+  p->semaphores = semaphores;
   return p;
 }
 
@@ -470,13 +469,12 @@ procdump(void)
   }
 }
 void init_sems(void) {
-    int i=0;
-    acquire(&ptable.lock);
-    for (;i<SEM_LIMIT;i++) {
+    int i;
+    for (i=0;i<SEM_LIMIT;i++) {
         struct spinlock lock;
         char *lab="Sem-";lab[3]=i;
         initlock(&lock,lab);
-        ptable.semaphores[i]=(struct semaphore){i,SEM_DEAD,&lock};
+        semaphores[i]=(struct semaphore){i,SEM_DEAD,&lock};
     }
-    release(&ptable.lock);
+    
 }
