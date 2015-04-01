@@ -101,10 +101,14 @@ int sys_sem_init(void){
 }
 int sys_sem_destroy(void) {
     int sem;argint(0, &sem);
-    
-	return 1;
+    if(proc->semaphores[sem].state==SEM_ACTIVE){proc->semaphores[sem].state=SEM_DEAD}
+    else{return -1;}	    
+    return 1;
 }
 int sys_sem_wait(void){
+	int sem;argint(0,&sem);int count;argint(1,&count);
+	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value--;
+	if(proc->semaphores[sem].value<0){sleep(&proc->semaphores[sem].value,proc->semaphores[sem].lock);}
 	return 1;
 }
 int sys_sem_signal(void){
