@@ -102,7 +102,7 @@ int sys_sem_init(void){
 int sys_sem_destroy(void) {
 	int sem;argint(0, &sem);
 	if(proc->semaphores[sem].state==SEM_ACTIVE){proc->semaphores[sem].state=SEM_DEAD;}
-	else{return -1;}	    
+	else{return -1;}
 	return 1;
 }
 int sys_sem_wait(void){
