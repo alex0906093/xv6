@@ -92,31 +92,30 @@ sys_uptime(void)
 }
 //Semaphore system calls
 int sys_sem_init(void){
-    int sem,value;argint(0, &sem);argint(1, &value);
-    if (proc->semaphores[sem].state==SEM_ACTIVE||value<0) {return -1;}
-    proc->semaphores[sem].state=SEM_ACTIVE;
-    proc->semaphores[sem].value=value;
-    if (proc->semaphores[sem].lock) {initlock(proc->semaphores[sem].lock,"semaphore");}
-    return 1;
+    	int sem,value;argint(0, &sem);argint(1, &value);
+	if (proc->semaphores[sem].state==SEM_ACTIVE||value<0) {return -1;}
+	proc->semaphores[sem].state=SEM_ACTIVE;
+	proc->semaphores[sem].value=value;
+	if (proc->semaphores[sem].lock) {initlock(proc->semaphores[sem].lock,"semaphore");}
+	return 1;
 }
 int sys_sem_destroy(void) {
-    int sem;argint(0, &sem);
-    if(proc->semaphores[sem].state==SEM_ACTIVE){proc->semaphores[sem].state=SEM_DEAD;}
-    else{return -1;}	    
-    return 1;
+	int sem;argint(0, &sem);
+	if(proc->semaphores[sem].state==SEM_ACTIVE){proc->semaphores[sem].state=SEM_DEAD;}
+	else{return -1;}	    
+	return 1;
 }
 int sys_sem_wait(void){
 	int sem;argint(0,&sem);int count;argint(1,&count);
 	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value--;
 	if(proc->semaphores[sem].value<0){sleep(&proc->semaphores[sem].value,proc->semaphores[sem].lock);}
-	release(proc->semaphores[sem].lock);
+	else{release(proc->semaphores[sem].lock); return -1;}
 	return 1;
 }
 int sys_sem_signal(void){
 	int sem;argint(0,&sem);int count; argint(1, &count);
 	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value++;
 	wakeup(&proc->semaphores[sem]);
-	release(proc->semaphores[sem].lock);
 	return 1;
 }
 // Halt (shutdown) the system by sending a special
