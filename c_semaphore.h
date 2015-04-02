@@ -7,7 +7,7 @@
 //--------------------
 struct semaphore {
 	int value, state;
-	struct spinlock *lock;
+	struct spinlock lock;
 };
 
 void init_sems(void);

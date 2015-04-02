@@ -6,7 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-#include "c_semaphore.h"
+//#include "c_semaphore.h"
 int
 sys_fork(void)
 {
@@ -89,38 +89,7 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
-//Semaphore system calls
-int sys_sem_init(void){
-    	int sem,value;argint(0, &sem);argint(1, &value);
-	cprintf("before lock\n");
-	acquire(proc->semaphores[sem].lock);
-	cprintf("after lock\n");
-	if (proc->semaphores[sem].state==SEM_ACTIVE||value<0) {release(proc->semaphores[sem].lock); return -1;}
-	proc->semaphores[sem].state=SEM_ACTIVE;
-	proc->semaphores[sem].value=value;
-	release(proc->semaphores[sem].lock);
-	return 1;
-}
-int sys_sem_destroy(void) {
-	int sem;argint(0, &sem);
-	acquire(proc->semaphores[sem].lock);
-	if(proc->semaphores[sem].state==SEM_ACTIVE){proc->semaphores[sem].state=SEM_DEAD; release(proc->semaphores[sem].lock);}
-	else{release(proc->semaphores[sem].lock);return -1;}
-	return 1;
-}
-int sys_sem_wait(void){
-	int sem,count;argint(0,&sem);argint(1,&count);
-	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value--;
-	if(proc->semaphores[sem].value<0){sleep(&proc->semaphores[sem],proc->semaphores[sem].lock);}
-	else{release(proc->semaphores[sem].lock); return -1;}
-	return 1;
-}
-int sys_sem_signal(void){
-	int sem,count;argint(0,&sem);argint(1, &count);cprintf("SEM_SIG revieved\n");
-	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value++;
-	wakeup(proc->semaphores[sem].lock);
-	return 1;
-}
+
 // Halt (shutdown) the system by sending a special
 // signal to QEMU.
 // Based on: http://pdos.csail.mit.edu/6.828/2012/homework/xv6-syscall.html

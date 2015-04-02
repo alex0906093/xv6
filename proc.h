@@ -1,6 +1,6 @@
 // Segments in proc->gdt.
 #define NSEGS     7
-#include "c_semaphore.h"
+//#include "c_semaphore.h"
 // Per-CPU state
 struct cpu {
   uchar id;                    // Local APIC ID; index into cpus[] below
@@ -15,9 +15,11 @@ struct cpu {
   struct cpu *cpu;
   struct proc *proc;           // The currently-running process.
 };
-
+void init_sems(void);
 extern struct cpu cpus[NCPU];
 extern int ncpu;
+
+
 
 // Per-CPU variables, holding pointers to the
 // current cpu and to the current process.
@@ -67,7 +69,6 @@ struct proc {
   void *chan;                  // If non-zero, sleeping on chan
   int killed;                  // If non-zero, have been killed
   struct file *ofile[NOFILE];  // Open files
-  struct semaphore *semaphores;//semaphore table pointer
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 };
