@@ -507,7 +507,7 @@ int sys_sem_destroy(void) {
   return 1;
 }
 int sys_sem_wait(void){
-  int sem,count;argint(0,&sem);argint(1,&count);
+  int sem,count;argint(0,&sem);argint(1,&count);cprintf("SEM_WAIT revieved\n");
   acquire(&semaphores[sem].lock);semaphores[sem].value--;
   if(semaphores[sem].value<0){sleep(&semaphores[sem],&semaphores[sem].lock);}
   else{release(&semaphores[sem].lock); return -1;}
@@ -516,6 +516,7 @@ int sys_sem_wait(void){
 int sys_sem_signal(void){
   int sem,count;argint(0,&sem);argint(1, &count);cprintf("SEM_SIG revieved\n");
   acquire(&semaphores[sem].lock);semaphores[sem].value++;
-  wakeup(&semaphores[sem].lock);
+  wakeup(&semaphores[sem]);
+  release(&semaphores[sem].lock);
   return 1;
 }
