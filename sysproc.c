@@ -106,14 +106,14 @@ int sys_sem_destroy(void) {
 	return 1;
 }
 int sys_sem_wait(void){
-	int sem;argint(0,&sem);int count;argint(1,&count);
+	int sem,count;argint(0,&sem);argint(1,&count);
 	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value--;
 	if(proc->semaphores[sem].value<0){sleep(&proc->semaphores[sem].value,proc->semaphores[sem].lock);}
 	else{release(proc->semaphores[sem].lock); return -1;}
 	return 1;
 }
 int sys_sem_signal(void){
-	int sem;argint(0,&sem);int count; argint(1, &count);
+	int sem,count;argint(0,&sem);argint(1, &count);
 	acquire(proc->semaphores[sem].lock);proc->semaphores[sem].value++;
 	wakeup(&proc->semaphores[sem]);
 	return 1;
