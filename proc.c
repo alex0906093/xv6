@@ -6,10 +6,6 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-#include "c_semaphore.h"
-
-
-
 
 struct {
   struct spinlock lock;
@@ -469,10 +465,11 @@ procdump(void)
   }
 }
 void init_sems(void) {
-    int i;
+    int i;cprintf("b4 loop\n");
     for (i=0;i<SEM_LIMIT;i++) {
-        struct spinlock lock;
-        char *lab="Sem-";lab[3]=i;
+	struct spinlock lock;
+        char lab[]={'S','e','m','a'+i};
+	cprintf("    Created [%s]\n",lab);
         initlock(&lock,lab);
         semaphores[i]=(struct semaphore){i,SEM_DEAD,&lock};
     }

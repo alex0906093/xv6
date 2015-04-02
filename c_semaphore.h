@@ -4,11 +4,11 @@
 //--------------------
 #define SEM_DEAD   0
 #define SEM_ACTIVE 1
-//#include "spinlock.h"
 //--------------------
 struct semaphore {
-    int value, state;
-    struct spinlock *lock;
+	int value, state;
+	struct spinlock *lock;
 };
+
 void init_sems(void);
 #endif

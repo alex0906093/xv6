@@ -85,11 +85,13 @@ int main(int argc, char **argv)
 	int final_target = NUM_CHILDREN*TARGET_COUNT_PER_CHILD;
 
 	// Initialize semaphore to 1
+	printf(1, "code started");
 	if (sem_init(SEMAPHORE_NUM, 1) < 0)
 	{
 		printf(1, "main: error initializing semaphore %d\n", SEMAPHORE_NUM);
 		exit();
 	}
+	printf(1, "sem init done");
 
 	// Initialize counter
 	counter_init(COUNTER_FILE, 0);
