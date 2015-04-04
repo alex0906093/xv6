@@ -476,11 +476,10 @@ procdump(void)
 
 
 void init_sems(void) {
-    int i;cprintf("b4 loop\n");
+    int i;
     for (i=0;i<SEM_LIMIT;i++) {
 	struct spinlock lock;
         char lab[]={'S','e','m','a'+i};
-	cprintf("    Created [%s]\n",lab);
         initlock(&lock,lab);
         semaphores[i]=(struct semaphore){i,SEM_DEAD,lock};
     }
@@ -490,9 +489,7 @@ void init_sems(void) {
 //Semaphore system calls
 int sys_sem_init(void){
       int sem,value;argint(0, &sem);argint(1, &value);
-  cprintf("before lock\n");
   acquire(&semaphores[sem].lock);
-  cprintf("after lock\n");
   if (semaphores[sem].state==SEM_ACTIVE||value<0) {release(&semaphores[sem].lock); return -1;}
   semaphores[sem].state=SEM_ACTIVE;
   semaphores[sem].value=value;
@@ -507,16 +504,15 @@ int sys_sem_destroy(void) {
   return 1;
 }
 int sys_sem_wait(void){
-  int sem,count;argint(0,&sem);argint(1,&count);cprintf("SEM_WAIT revieved\n");
+  int sem,count;argint(0,&sem);argint(1,&count);
   acquire(&semaphores[sem].lock);semaphores[sem].value--;
-  if(semaphores[sem].value<0){sleep(&semaphores[sem],&semaphores[sem].lock);}
-  else{release(&semaphores[sem].lock); return -1;}
+  if(semaphores[sem].value<0){sleep(&semaphores[sem],&semaphores[sem].lock);release(&semaphores[sem].lock);}
+  else{release(&semaphores[sem].lock);return 1;}
   return 1;
 }
 int sys_sem_signal(void){
-  int sem,count;argint(0,&sem);argint(1, &count);cprintf("SEM_SIG revieved\n");
-  acquire(&semaphores[sem].lock);semaphores[sem].value++;
-  wakeup(&semaphores[sem]);
+  int sem,count;argint(0,&sem);argint(1, &count);
+  acquire(&semaphores[sem].lock);semaphores[sem].value++;wakeup(&semaphores[sem]);
   release(&semaphores[sem].lock);
   return 1;
 }
