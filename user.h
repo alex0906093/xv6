@@ -41,3 +41,5 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+int clone(void *func (void*), void *arg, void *stack);
+int join(void **stack);
