@@ -4,7 +4,7 @@
 #include "fs.h"
 #include "fcntl.h"
 
-#define NUM_CHILDREN 5
+#define NUM_CHILDREN 2
 #define TARGET_COUNT_PER_CHILD 50
 #define COUNTER_FILE "counter"
 #define SEMAPHORE_NUM 0
@@ -83,10 +83,14 @@ int main(int argc, char **argv)
 	int i;
 	int final_counter;
 	int final_target = NUM_CHILDREN*TARGET_COUNT_PER_CHILD;
-
+	int sem_size;
+	if (argc >= 2)
+		sem_size = NUM_CHILDREN;
+	else
+		sem_size = 1;
 	// Initialize semaphore to 1
 	//printf(1, "code started\n");
-	if (sem_init(SEMAPHORE_NUM, 1) < 0)
+	if (sem_init(SEMAPHORE_NUM, sem_size) < 0)
 	{
 		printf(1, "main: error initializing semaphore %d\n", SEMAPHORE_NUM);
 		exit();
