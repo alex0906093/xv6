@@ -4,7 +4,7 @@
 #include "fs.h"
 #include "fcntl.h"
 
-#define NUM_CHILDREN 2
+#define NUM_CHILDREN 5
 #define TARGET_COUNT_PER_CHILD 50
 #define COUNTER_FILE "counter"
 #define SEMAPHORE_NUM 0

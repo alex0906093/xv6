@@ -7,15 +7,20 @@
 #include "proc.h"
 #include "spinlock.h"
 
-struct {
-  struct spinlock lock;
-  struct proc proc[NPROC];
-} ptable;
+
 #define SEM_LIMIT  32
 //--------------------
 #define SEM_DEAD   0
 #define SEM_ACTIVE 1
 //--------------------
+
+
+
+struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} ptable;
+
 struct semaphore {
   int value, state;
   struct spinlock lock;
@@ -503,24 +508,103 @@ int sys_sem_destroy(void) {
   else{release(&semaphores[sem].lock);return -1;}
   return 1;
 }
+//sleep does release, acquire
 int sys_sem_wait(void){
   int sem,count;argint(0,&sem);argint(1,&count);
-  acquire(&semaphores[sem].lock);semaphores[sem].value--;
-  if(semaphores[sem].value<0){sleep(&semaphores[sem],&semaphores[sem].lock);release(&semaphores[sem].lock);}
-  else{release(&semaphores[sem].lock);return 1;}
+  acquire(&semaphores[sem].lock);
+  while(semaphores[sem].value<=0)
+    {
+      sleep(&semaphores[sem],&semaphores[sem].lock);
+    }
+    semaphores[sem].value--;
+  release(&semaphores[sem].lock);
   return 1;
+  
+  
 }
 int sys_sem_signal(void){
-  int sem,count;argint(0,&sem);argint(1, &count);
-  acquire(&semaphores[sem].lock);semaphores[sem].value++;wakeup(&semaphores[sem]);
-  release(&semaphores[sem].lock);
+  int sem,count;
+  argint(0,&sem);argint(1, &count);
+  acquire(&semaphores[sem].lock);semaphores[sem].value++;
+  wakeup(&semaphores[sem]);release(&semaphores[sem].lock);
   return 1;
 }
 //threading system calls
+//clone similar to fork
 int sys_clone(void){
+int i, pid;
+  struct proc *np;
 
-  return 1;
+  // Allocate process.
+  if((np = allocproc()) == 0)
+    return -1;
+
+  // Copy process state from p.
+  if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
+    return -1;
+  }
+  np->sz = proc->sz;
+  np->parent = proc;
+  *np->tf = *proc->tf;
+
+  // Clear %eax so that fork returns 0 in the child.
+  np->tf->eax = 0;
+
+  for(i = 0; i < NOFILE; i++)
+    if(proc->ofile[i])
+      np->ofile[i] = filedup(proc->ofile[i]);
+  np->cwd = idup(proc->cwd);
+
+  safestrcpy(np->name, proc->name, sizeof(proc->name));
+ 
+  pid = np->pid;
+
+  // lock to force the compiler to emit the np->state write last.
+  acquire(&ptable.lock);
+  np->state = RUNNABLE;
+  release(&ptable.lock);
+  
+  return pid;
 }
+//join, similar to wait
 int sys_join(void){
-  return 1;
+   struct proc *p;
+  int havekids, pid;
+
+  acquire(&ptable.lock);
+  for(;;){
+    // Scan through table looking for zombie children.
+    havekids = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->parent != proc)
+        continue;
+      havekids = 1;
+      if(p->state == ZOMBIE){
+        // Found one.
+        pid = p->pid;
+        kfree(p->kstack);
+        p->kstack = 0;
+        freevm(p->pgdir);
+        p->state = UNUSED;
+        p->pid = 0;
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        release(&ptable.lock);
+        return pid;
+      }
+    }
+
+    // No point waiting if we don't have any children.
+    if(!havekids || proc->killed){
+      release(&ptable.lock);
+      return -1;
+    }
+
+    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    sleep(proc, &ptable.lock);  //DOC: wait-sleep
+  }
 }
