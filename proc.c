@@ -429,7 +429,7 @@ kill(int pid)
 
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->pid == pid){
+    if(p->pid == pid || (p->is_thread && p->parent->pid==pid)){
       p->killed = 1;
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING)
@@ -493,18 +493,16 @@ void init_sems(void) {
 
 //Semaphore system calls
 int sys_sem_init(void){
-      int sem,value;argint(0, &sem);argint(1, &value);
+  int sem,value;argint(0, &sem);argint(1, &value);
   acquire(&semaphores[sem].lock);
   if (semaphores[sem].state==SEM_ACTIVE||value<0) {release(&semaphores[sem].lock); return -1;}
-  semaphores[sem].state=SEM_ACTIVE;
-  semaphores[sem].value=value;
-  release(&semaphores[sem].lock);
+  semaphores[sem].state=SEM_ACTIVE;semaphores[sem].value=value;release(&semaphores[sem].lock);
   return 1;
 }
 int sys_sem_destroy(void) {
   int sem;argint(0, &sem);
   acquire(&semaphores[sem].lock);
-  if(semaphores[sem].state==SEM_ACTIVE){semaphores[sem].state=SEM_DEAD; release(&semaphores[sem].lock);}
+  if(semaphores[sem].state==SEM_ACTIVE){semaphores[sem].state=SEM_DEAD;release(&semaphores[sem].lock);}
   else{release(&semaphores[sem].lock);return -1;}
   return 1;
 }
@@ -512,16 +510,11 @@ int sys_sem_destroy(void) {
 int sys_sem_wait(void){
   int sem,count;argint(0,&sem);argint(1,&count);
   acquire(&semaphores[sem].lock);
-  while(semaphores[sem].value<=0)
-    {
-      sleep(&semaphores[sem],&semaphores[sem].lock);
-    }
-    semaphores[sem].value--;
-  release(&semaphores[sem].lock);
+  while(semaphores[sem].value<=0){sleep(&semaphores[sem],&semaphores[sem].lock);}
+  semaphores[sem].value--;release(&semaphores[sem].lock);
   return 1;
-  
-  
 }
+
 int sys_sem_signal(void){
   int sem,count;
   argint(0,&sem);argint(1, &count);
@@ -534,11 +527,6 @@ int sys_sem_signal(void){
 int sys_clone(void){
 int i, pid;
   struct proc *np;
-
-  // Allocate process.
-  if((np = allocproc()) == 0)
-    return -1;
-
   // Copy process state from p.
   if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
     kfree(np->kstack);
@@ -549,10 +537,15 @@ int i, pid;
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
-
+  int funcAdd, argAdd, stackAdd;
+  argint(0, &funcAdd);argint(1,&argAdd);argint(2, &stackAdd);
+  np->tf->eip = (uint)funcAdd;
+  np->tf->esp = (uint)(stackAdd+4096-4);
+  *((uint*)(np->tf->esp-4)) = argAdd;
+  *((uint*)(np->tf->esp-8)) = 0xffffffff;
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
-
+  np->kstack = stackAdd;
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
@@ -566,12 +559,13 @@ int i, pid;
   acquire(&ptable.lock);
   np->state = RUNNABLE;
   release(&ptable.lock);
-  
+  np->is_thread = 1;
   return pid;
 }
 //join, similar to wait
 int sys_join(void){
-   struct proc *p;
+  if(p->is_thread){
+  struct proc *p;
   int havekids, pid;
 
   acquire(&ptable.lock);
@@ -595,7 +589,7 @@ int sys_join(void){
         p->killed = 0;
         release(&ptable.lock);
         return pid;
-      }
+        }
     }
 
     // No point waiting if we don't have any children.
@@ -607,4 +601,6 @@ int sys_join(void){
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
   }
+}
+else{return -1;}
 }
