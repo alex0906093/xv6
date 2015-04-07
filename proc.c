@@ -435,9 +435,10 @@ kill(int pid)
       if(p->state == SLEEPING)
         p->state = RUNNABLE;
       release(&ptable.lock);
-      return 0;
+      
     }
   }
+  return 0;
   release(&ptable.lock);
   return -1;
 }
@@ -516,6 +517,7 @@ int sys_sem_wait(void){
 }
 
 int sys_sem_signal(void){
+
   int sem,count;
   argint(0,&sem);argint(1, &count);
   acquire(&semaphores[sem].lock);semaphores[sem].value++;
@@ -525,6 +527,7 @@ int sys_sem_signal(void){
 //threading system calls
 //clone similar to fork
 int sys_clone(void){
+  /*
 int i, pid;
   struct proc *np;
   // Copy process state from p.
@@ -545,7 +548,7 @@ int i, pid;
   *((uint*)(np->tf->esp-8)) = 0xffffffff;
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
-  np->kstack = stackAdd;
+  np->kstack = (char*)stackAdd;
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
@@ -561,10 +564,12 @@ int i, pid;
   release(&ptable.lock);
   np->is_thread = 1;
   return pid;
+  */
+  return 1;
 }
 //join, similar to wait
 int sys_join(void){
-  if(p->is_thread){
+  /*
   struct proc *p;
   int havekids, pid;
 
@@ -601,6 +606,7 @@ int sys_join(void){
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
   }
-}
-else{return -1;}
+
+*/
+return 1;
 }
