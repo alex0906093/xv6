@@ -172,7 +172,7 @@ fork(void)
   safestrcpy(np->name, proc->name, sizeof(proc->name));
  
   pid = np->pid;
-
+  np->is_thread = 0;
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
   np->state = RUNNABLE;
@@ -184,6 +184,8 @@ fork(void)
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.
+
+// no memory clean up for thread don't assign child processes to new parents
 void
 exit(void)
 {
@@ -214,7 +216,8 @@ exit(void)
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->parent == proc){
-      p->parent = initproc;
+      if(!p->is_thread) {p->parent = initproc;}
+      else {kill(p->pid);}
       if(p->state == ZOMBIE)
         wakeup1(initproc);
     }
@@ -527,66 +530,69 @@ int sys_sem_signal(void){
 //threading system calls
 //clone similar to fork
 int sys_clone(void){
-  /*
-int i, pid;
+  
+  int i, pid;
   struct proc *np;
+  //allocate memory for the process
+  if((np = allocproc()) == 0)
+    {cprintf("an alloc proc failed\n");return -1;}
+  np->pgdir = proc->pgdir;
+  np->is_thread = 1;
   // Copy process state from p.
-  if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
-    kfree(np->kstack);
-    np->kstack = 0;
-    np->state = UNUSED;
-    return -1;
-  }
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
   int funcAdd, argAdd, stackAdd;
   argint(0, &funcAdd);argint(1,&argAdd);argint(2, &stackAdd);
-  np->tf->eip = (uint)funcAdd;
-  np->tf->esp = (uint)(stackAdd+4096-4);
-  *((uint*)(np->tf->esp-4)) = argAdd;
+  *((uint*)(np->tf->eip)) = (uint)funcAdd; // might not be right
+  np->tf->esp = ((uint)stackAdd+PGSIZE-4);
+  *((uint*)(np->tf->esp-4)) = (uint)argAdd;
   *((uint*)(np->tf->esp-8)) = 0xffffffff;
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
   np->kstack = (char*)stackAdd;
+  cprintf("getting into clone\n");
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
   np->cwd = idup(proc->cwd);
-
+  cprintf("get past loop in clone\n");
   safestrcpy(np->name, proc->name, sizeof(proc->name));
  
   pid = np->pid;
-
+  
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
   np->state = RUNNABLE;
   release(&ptable.lock);
-  np->is_thread = 1;
+  cprintf("get to return with pid %d\n", pid);
   return pid;
-  */
-  return 1;
+  
 }
-//join, similar to wait
+//join, similar to wait copy the address of the stack back to the address given to the parameter
 int sys_join(void){
-  /*
+  int stackAddress;argint(0, &stackAddress);  //get user argument
   struct proc *p;
   int havekids, pid;
-
+  cprintf("getting into join\n");
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for zombie children.
     havekids = 0;
+    cprintf("gets into first for loop\n");
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      cprintf("gets into second for loop\n");
       if(p->parent != proc)
-        continue;
+        {cprintf("1\n");continue;}
       havekids = 1;
-      if(p->state == ZOMBIE){
+      cprintf("found parent\n");
+      if(p->state == ZOMBIE && p->is_thread){
         // Found one.
         pid = p->pid;
-        kfree(p->kstack);
-        p->kstack = 0;
-        freevm(p->pgdir);
+        stackAddress = (int)p->kstack; 
+        //kfree(p->kstack);
+        cprintf("gets to assigning kstack\n");
+        //p->kstack = 0;
         p->state = UNUSED;
         p->pid = 0;
         p->parent = 0;
@@ -607,6 +613,7 @@ int sys_join(void){
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
   }
 
-*/
+
 return 1;
+
 }
