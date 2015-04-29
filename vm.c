@@ -11,33 +11,7 @@ extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 struct segdesc gdt[NSEGS];
 
-//mprotect
-int sys_mprotect(void){
-	int addr;int len; int prot;
-	if(argint(0, &addr) < 0){
-		return -1;
-	}
-	if(argint(1, &len) < 0){
-		return -1;
-	}
-	if(argint(2, &prot) < 0){
-		return -1;
-	}
-	const void* padd = (const void*) addr;
-  pde_t *pgdir = proc->pgdir;
-  pte_t *modify;
-  modify = walkpgdir(pgdir, padd, 0);
-  if(prot == PROT_READ){
 
-  }
-  if(prot == PROT_WRITE){
-
-  }
-  if(prot == PROT_NONE){
-    
-  }
-	return 1;
-}
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
 void
@@ -403,7 +377,45 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   }
   return 0;
 }
-
+//mprotect
+int sys_mprotect(void){
+  int addr;int len; int prot;
+  if(argint(0, &addr) < 0){
+    return -1;
+  }
+  if(argint(1, &len) < 0){
+    return -1;
+  }
+  if(argint(2, &prot) < 0){
+    return -1;
+  }
+  const void* padd = (const void*) addr;
+  pde_t *pgdir = proc->pgdir;
+  pte_t *modify;
+  modify = walkpgdir(pgdir, padd, 0);
+  //guide: line 290
+  if(prot == PROT_READ){
+      *modify = PTE_U & PTE_P & PTE_W;
+      if(*modify | PTE_P){
+        cprintf("got to PROT_READ in syscall \n");
+        return 1;
+    }
+  }
+  if(prot == PROT_WRITE){
+    *modify = PTE_U & PTE_P & PTE_W;
+    if(*modify | PTE_W){
+        return 1;
+    }
+      
+  }
+  if(prot == PROT_NONE){
+    *modify = PTE_U & PTE_P & PTE_W;
+    if(*modify | PTE_U){
+      return 1;
+    }
+  }
+  return -1;
+}
 //PAGEBREAK!
 // Blank page.
 //PAGEBREAK!

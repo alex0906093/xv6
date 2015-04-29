@@ -84,8 +84,9 @@ trap(struct trapframe *tf)
         break;
       }
     case T_PGFLT:
+      cprintf("trap activated\n");
       if(proc->handlers[SIGSEGV] != (sighandler_t) -1){
-        
+        signal_deliver(SIGSEGV);
         break;
       }
 
