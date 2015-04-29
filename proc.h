@@ -17,7 +17,7 @@ struct cpu {
   struct cpu *cpu;
   struct proc *proc;           // The currently-running process.
 };
-
+//siginfo struct
 extern struct cpu cpus[NCPU];
 extern int ncpu;
 

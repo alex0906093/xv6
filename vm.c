@@ -11,6 +11,33 @@ extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 struct segdesc gdt[NSEGS];
 
+//mprotect
+int sys_mprotect(void){
+	int addr;int len; int prot;
+	if(argint(0, &addr) < 0){
+		return -1;
+	}
+	if(argint(1, &len) < 0){
+		return -1;
+	}
+	if(argint(2, &prot) < 0){
+		return -1;
+	}
+	const void* padd = (const void*) addr;
+  pde_t *pgdir = proc->pgdir;
+  pte_t *modify;
+  modify = walkpgdir(pgdir, padd, 0);
+  if(prot == PROT_READ){
+
+  }
+  if(prot == PROT_WRITE){
+
+  }
+  if(prot == PROT_NONE){
+    
+  }
+	return 1;
+}
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
 void

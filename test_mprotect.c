@@ -1,6 +1,6 @@
 #include "types.h"
 #include "user.h"
-
+#include "signal.h"
 int *p;
 
 void handler(int signum, siginfo_t info)
@@ -19,7 +19,7 @@ void handler(int signum, siginfo_t info)
 } 
 int main(void)
 {
-	signal(SIGSEGV, handler);
+	signal(SIGSEGV, (sighandler_t)handler);
  	p = (int *) sbrk(1);
  	mprotect((void *)p, sizeof(int), PROT_READ);
  	*p=100;
