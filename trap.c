@@ -80,13 +80,16 @@ trap(struct trapframe *tf)
    
    case T_DIVIDE:
       if (proc->handlers[SIGFPE] != (sighandler_t) -1) {
-        signal_deliver(SIGFPE);
+        signal_deliver(SIGFPE, 0, 0);
         break;
       }
     case T_PGFLT:
-      cprintf("trap activated\n");
+      cprintf("[trap.c] Trap activated\n");
       if(proc->handlers[SIGSEGV] != (sighandler_t) -1){
-        signal_deliver(SIGSEGV);
+        //extract address and protection type
+        uint addr = rcr2();
+        cprintf("    [trap.c] Error Code: %d\n", tf->err);
+        signal_deliver(SIGSEGV, addr, 1);
         break;
       }
 

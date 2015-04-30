@@ -389,31 +389,43 @@ int sys_mprotect(void){
   if(argint(2, &prot) < 0){
     return -1;
   }
-  const void* padd = (const void*) addr;
+  cprintf("[sys_mprotect] KERNEL: addr is 0x%x, len is %d, prot is %d\n", v2p((int *)addr), len, prot);
+  pde_t* vadd;
+  *vadd = v2p(addr);
   pde_t *pgdir = proc->pgdir;
   pte_t *modify;
-  modify = walkpgdir(pgdir, padd, 0);
+  modify = walkpgdir(pgdir, vadd, 0);
   //guide: line 290
   if(prot == PROT_READ){
-      *modify = PTE_U & PTE_P & PTE_W;
-      if(*modify | PTE_P){
-        cprintf("got to PROT_READ in syscall \n");
-        return 1;
-    }
+    cprintf("[sys_mprotect] Read:\n");
+    cprintf("    [sys_mprotect] Old modify: %x\n", *modify);
+    *modify &= ~PTE_U;
+    *modify &= ~PTE_P;
+    *modify &= ~PTE_W;
+    *modify |= PTE_P;
+    cprintf("    [sys_mprotect] New modify: %x\n", *modify);
+    return 1;
   }
-  if(prot == PROT_WRITE){
-    *modify = PTE_U & PTE_P & PTE_W;
-    if(*modify | PTE_W){
-        return 1;
-    }
-      
-  }
-  if(prot == PROT_NONE){
+  if(prot == (PROT_READ|PROT_WRITE)){
+    cprintf("[sys_mprotect] Read&Write:\n");
+    cprintf("    [sys_mprotect] Old modify: %x\n", *modify);
+    *modify &= ~PTE_U;
+    *modify &= ~PTE_P;
+    *modify &= ~PTE_W;
+    *modify |= PTE_P;
+    *modify |= PTE_W;
+    *modify |= PTE_U;
+    //*oldmodify = v2p(modify);
+    cprintf("    [sys_mprotect] New modify: %x\n", *modify);
+    return 1;  
+  } else if (prot == PROT_NONE){
+    cprintf("[sys_mprotect] None:\n");
     *modify = PTE_U & PTE_P & PTE_W;
     if(*modify | PTE_U){
       return 1;
     }
   }
+  cprintf("[sys_mprotect] INVALID PROTECTION VALUE:\n");
   return -1;
 }
 //PAGEBREAK!
