@@ -380,51 +380,38 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //mprotect
 int sys_mprotect(void){
   int addr;int len; int prot;
-  if(argint(0, &addr) < 0){
-    return -1;
-  }
-  if(argint(1, &len) < 0){
-    return -1;
-  }
-  if(argint(2, &prot) < 0){
-    return -1;
-  }
-  cprintf("[sys_mprotect] KERNEL: addr is 0x%x, len is %d, prot is %d\n", v2p((int *)addr), len, prot);
-  pde_t* vadd;
-  *vadd = v2p(addr);
+  if(argint(0, &addr) < 0){return -1;}if(argint(1, &len) < 0){return -1;}if(argint(2, &prot) < 0){return -1;}//extract arguments
+  cprintf("[sys_mprotect] KERNEL: addr is 0x%x, len is %d, prot is %d\n", addr, len, prot);
   pde_t *pgdir = proc->pgdir;
   pte_t *modify;
-  modify = walkpgdir(pgdir, vadd, 0);
+  modify = walkpgdir(pgdir, (const void*)addr, 0);
   //guide: line 290
   if(prot == PROT_READ){
     cprintf("[sys_mprotect] Read:\n");
     cprintf("    [sys_mprotect] Old modify: %x\n", *modify);
-    *modify &= ~PTE_U;
-    *modify &= ~PTE_P;
-    *modify &= ~PTE_W;
-    *modify |= PTE_P;
+    *modify &= ~PTE_P;*modify &= ~PTE_W; //clear bits
+    *modify |= PTE_P; //set read bit only
     cprintf("    [sys_mprotect] New modify: %x\n", *modify);
+    addr = (uint)p2v((uint)*modify);
+    lcr3(v2p(proc->pgdir));
     return 1;
   }
   if(prot == (PROT_READ|PROT_WRITE)){
     cprintf("[sys_mprotect] Read&Write:\n");
     cprintf("    [sys_mprotect] Old modify: %x\n", *modify);
-    *modify &= ~PTE_U;
-    *modify &= ~PTE_P;
-    *modify &= ~PTE_W;
-    *modify |= PTE_P;
-    *modify |= PTE_W;
-    *modify |= PTE_U;
-    //*oldmodify = v2p(modify);
+    *modify &= ~PTE_U;*modify &= ~PTE_P;*modify &= ~PTE_W;//clear bits
+    *modify |= PTE_P;*modify |= PTE_W;*modify |= PTE_U; //set bits
     cprintf("    [sys_mprotect] New modify: %x\n", *modify);
+    addr = (uint)p2v((uint)*modify);
+    lcr3(v2p(proc->pgdir));
     return 1;  
   } else if (prot == PROT_NONE){
     cprintf("[sys_mprotect] None:\n");
-    *modify = PTE_U & PTE_P & PTE_W;
-    if(*modify | PTE_U){
-      return 1;
+    *modify &= ~PTE_U;*modify &= ~PTE_P;*modify &= ~PTE_W;//clear bits 
+    *modify |= ~PTE_U;//set user only bit
+    lcr3(v2p(proc->pgdir));
+    return 1;
     }
-  }
   cprintf("[sys_mprotect] INVALID PROTECTION VALUE:\n");
   return -1;
 }

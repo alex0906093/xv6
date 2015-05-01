@@ -474,10 +474,10 @@ void signal_deliver(int signum, int addr, int type)
   *((uint*)(proc->tf->esp - 8))  = proc->tf->eax;     // eax
   *((uint*)(proc->tf->esp - 12)) = proc->tf->ecx;     // ecx
   *((uint*)(proc->tf->esp - 16)) = proc->tf->edx;     // edx
-  *((uint*)(proc->tf->esp - 28)) = (uint) signum;     // signal number
-  *((uint*)(proc->tf->esp - 24)) = (uint) addr;       // address for siginfo_t
-  cprintf("[signal_deliver] Addresss is 0x%x \n", addr);
   *((uint*)(proc->tf->esp - 20)) = (uint) type;       //protection level for siginfo_t
+  *((uint*)(proc->tf->esp - 24)) = (uint) addr;       // address for siginfo_t
+  *((uint*)(proc->tf->esp - 28)) = (uint) signum;     // signal number
+  //cprintf("[signal_deliver] Addresss is 0x%x \n", addr);
   *((uint*)(proc->tf->esp - 32)) = proc->restorer_addr; // address of restorer
   proc->tf->esp -= 32;
   proc->tf->eip = (uint) proc->handlers[signum];
