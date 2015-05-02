@@ -84,12 +84,16 @@ trap(struct trapframe *tf)
         break;
       }
     case T_PGFLT:
-      cprintf("[trap.c] Trap activated\n");
+      //cprintf("[trap.c] Trap activated\n");
       if(proc->handlers[SIGSEGV] != (sighandler_t) -1){
         //extract address and protection type
         uint addr = rcr2();
-        cprintf("    [trap.c] Error Code: %d\n", tf->err);
-        signal_deliver(SIGSEGV, addr, 1);
+        //cprintf("    [trap.c] Error Code: %d\n", tf->err);
+        if(tf->err == 7)
+        signal_deliver(SIGSEGV, addr, PROT_READ);
+        if(tf->err == 6 || tf->err == 5)
+        signal_deliver(SIGSEGV, addr, PROT_NONE);
+        //if(tf->err == )
         break;
       }
 
