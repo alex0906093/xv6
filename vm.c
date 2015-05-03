@@ -336,7 +336,40 @@ bad:
   freevm(d);
   return 0;
 }
+pde_t*
+copyuvm_cow(pde_t *pgdir, uint sz)
+{
+  pde_t *d;
+  pte_t *pte;
+  uint pa, i, flags;
+  char *mem;
 
+  if((d = setupkvm()) == 0)
+    return 0;
+  int numropages = 0;//number of read only pages on this cowfork call
+  for(i = 0; i < sz; i += PGSIZE){
+    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+      panic("copyuvm: pte should exist");
+    if(!(*pte & PTE_P))
+      panic("copyuvm: page not present");
+    *pte &= ~PTE_W;
+    *pte |= PTE_P;
+    numropages++;
+    pa = PTE_ADDR(*pte);
+    flags = PTE_FLAGS(*pte);
+    if((mem = kalloc()) == 0)
+      goto bad;
+    memmove(mem, (char*)p2v(pa), PGSIZE);
+    if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
+      goto bad;
+  }
+  lcr3(v2p(d));
+  return d;
+
+bad:
+  freevm(d);
+  return 0;
+}
 //PAGEBREAK!
 // Map user virtual address to kernel address.
 char*
@@ -416,6 +449,7 @@ int sys_mprotect(void){
   //cprintf("[sys_mprotect] INVALID PROTECTION VALUE:\n");
   return -1;
 }
+
 //PAGEBREAK!
 // Blank page.
 //PAGEBREAK!
