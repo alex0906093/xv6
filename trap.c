@@ -84,6 +84,13 @@ trap(struct trapframe *tf)
         break;
       }
     case T_PGFLT:
+    cprintf("[trap.c] got to T_PGFLT:\n");
+      if(tf->err == 7){
+          uint addr = rcr2();
+          cow(addr);
+          break;
+      }
+    /*
       //cprintf("[trap.c] Trap activated\n");
       if(proc->handlers[SIGSEGV] != (sighandler_t) -1){
         //extract address and protection type
@@ -95,7 +102,8 @@ trap(struct trapframe *tf)
         signal_deliver(SIGSEGV, addr, PROT_NONE);
         //if(tf->err == )
         break;
-      }
+      }*/
+
 
   //PAGEBREAK: 13
   default:

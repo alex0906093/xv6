@@ -176,6 +176,7 @@ UPROGS=\
 	_signal_test\
 	_test_mprotect\
 	_test_cow\
+	_mytest_cow\
 #	_test_demandalloc\
 
 fs.img: mkfs README $(UPROGS)

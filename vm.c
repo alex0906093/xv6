@@ -6,7 +6,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
-
+uchar refcount[NUMPAGES];
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 struct segdesc gdt[NSEGS];
@@ -263,10 +263,14 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       a += (NPTENTRIES - 1) * PGSIZE;
     else if((*pte & PTE_P) != 0){
       pa = PTE_ADDR(*pte);
+
       if(pa == 0)
         panic("kfree");
       char *v = p2v(pa);
+      if(refcount[PTE_ADDR(*pte)>>12] ==0 ||refcount[PTE_ADDR(*pte)>>12])
       kfree(v);
+      else
+        refcount[PTE_ADDR(*pte)>>12]--;
       *pte = 0;
     }
   }
@@ -336,6 +340,16 @@ bad:
   freevm(d);
   return 0;
 }
+int getrefcount(uint addr){
+  return refcount[addr];
+}
+int initrefcount(void){
+  int i;
+  for(i = 0; i <NUMPAGES; i++){
+    refcount[i] = 0;
+  }
+  return 1;
+}
 pde_t*
 copyuvm_cow(pde_t *pgdir, uint sz)
 {
@@ -346,29 +360,53 @@ copyuvm_cow(pde_t *pgdir, uint sz)
 
   if((d = setupkvm()) == 0)
     return 0;
-  int numropages = 0;//number of read only pages on this cowfork call
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
-      panic("copyuvm: pte should exist");
+      panic("copyuvm_cow: pte should exist");
     if(!(*pte & PTE_P))
-      panic("copyuvm: page not present");
-    *pte &= ~PTE_W;
+      panic("copyuvm_cow: page not present");
+    if(*pte & PTE_U){
+    *pte = *pte & ~(PTE_W);
     *pte |= PTE_P;
-    numropages++;
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);
-    if((mem = kalloc()) == 0)
-      goto bad;
-    memmove(mem, (char*)p2v(pa), PGSIZE);
-    if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
-      goto bad;
-  }
-  lcr3(v2p(d));
-  return d;
+    mappages(d, (void*)i, PGSIZE, pa, flags);
 
+    }
+    else{
+      pa = PTE_ADDR(*pte);
+      flags = PTE_FLAGS(*pte);
+        if((mem = kalloc()) == 0)
+          goto bad;
+      memmove(mem, (char*)p2v(pa), PGSIZE);
+      if(mappages(d, (void*)i, PGSIZE, v2p(mem), flags) < 0)
+      goto bad;
+    }
+  }
+  lcr3(v2p(pgdir));
+  return d;
 bad:
   freevm(d);
   return 0;
+}
+
+
+int cow(uint addr){
+    pde_t *pgdir = proc->pgdir;
+    pte_t *pte;
+    char *mem;
+    if((pte = walkpgdir(pgdir, (void*)addr, 0)) == 0)
+      panic("cow: pte should exist");
+    if(!(*pte & PTE_P))
+      panic("cow: page not present");
+    if((mem = kalloc()) == 0)
+      return -1;
+    memmove(mem, (char*)p2v(*pte), PGSIZE);
+    *pte = v2p(mem);
+    *pte = *pte | PTE_W | PTE_U | PTE_P;
+    refcount[PTE_ADDR(*pte)>>12]--;
+    lcr3(v2p(pgdir));
+    return 1;
 }
 //PAGEBREAK!
 // Map user virtual address to kernel address.
@@ -410,6 +448,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   }
   return 0;
 }
+
 //mprotect
 int sys_mprotect(void){
   int addr;int len; int prot;
